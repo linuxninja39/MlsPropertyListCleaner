@@ -8,8 +8,13 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by jaboswell on 9/18/16.
@@ -18,17 +23,17 @@ public class Main {
     public static String OPTION_F = "f";
     public static String OPTION_O = "o";
 
-    public static void main(String[] args) throws ParseException {
+    public static void main(String[] args) throws ParseException, IOException {
         CommandLine commandLine = getArgs(args);
 
         String inputFileName = commandLine.getOptionValue(OPTION_F);
-        File inputFile = new File(inputFileName);
-        if (!inputFile.canRead()) {
+        Path inputFile = Paths.get(inputFileName);
+        if (!Files.isReadable(inputFile)) {
             throw new RuntimeException("Can not read from file: " + inputFileName);
         }
         String outputFileName = commandLine.getOptionValue(OPTION_O);
-        File outputFile = new File(outputFileName);
-        if (!outputFile.canWrite()) {
+        Path outputFile = Paths.get(outputFileName);
+        if (!Files.isWritable(outputFile)) {
             throw new RuntimeException("Can not write to file: " + outputFileName);
         }
 
@@ -36,9 +41,10 @@ public class Main {
 
         MlsPropertyListCleaner listCleaner = injector.getInstance(MlsPropertyListCleaner.class);
 
-        ArrayList<String> lines = listCleaner.cleanFile(inputFile);
+        List<String> lines = listCleaner.cleanFile(inputFile);
 
-
+        Charset u = StandardCharsets.UTF_8;
+        Files.write(outputFile, lines, u);
     }
 
     private static CommandLine getArgs(String[] args) throws ParseException {
@@ -48,7 +54,7 @@ public class Main {
 
     private static Options setupOptions() {
         Options options = new Options();
-        options.addOption(OPTION_F, "File to parse");
-        options.addOption(OPTION_O, "File to write");
+        options.addOption(OPTION_F, true, "File to parse");
+        options.addOption(OPTION_O, true, "File to write");
         return options;
     } }

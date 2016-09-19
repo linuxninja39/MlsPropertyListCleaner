@@ -1,14 +1,61 @@
 package net.s56.homes.mlspropertylistcleaner;
 
+import com.google.inject.Inject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Created by jaboswell on 9/18/16.
  */
 public class WasatchFrontLineParser implements LineParser {
-    public String parseHeader(String headerString) {
-        return null;
+    private LineParserConfigFactory configFactory;
+    private LineParserConfig config;
+    private boolean headerParsed;
+    private Map<String, Integer> positionMap;
+
+    @Inject
+    public WasatchFrontLineParser(LineParserConfigFactory configFactory) throws IOException {
+        this.configFactory = configFactory;
+        config = configFactory.getConfig(this.getClass());
     }
 
-    public String parseLine(String lineString) {
-        return null;
+    public List<String> parseHeader(String headerString) {
+        headerParsed = true;
+        positionMap = new HashMap<>();
+
+        Integer counter = 0;
+        for (String element : headerString.split(",")) {
+            positionMap.put(element, counter);
+            counter++;
+        }
+
+        return config.getOrderedOutputFields();
+    }
+
+    public List<String> parseLine(String lineString) {
+        if (!headerParsed) {
+            throw new RuntimeException("Headed must be parsed first");
+        }
+        List<String> elements = Arrays.asList(lineString.split(","));
+        List<String> orderedElements = new ArrayList<>();
+
+        for (String element : config.getOrderedOutputFields()) {
+            if (!positionMap.containsKey(element)) {
+                throw new RuntimeException("header '" + element + "' not found in headers");
+            }
+
+            orderedElements.add(elements.get(positionMap.get(element)));
+        }
+
+        return orderedElements;
+    }
+
+    public boolean isHeaderParsed() {
+        return headerParsed;
     }
 }
