@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +27,13 @@ public class Main {
     public static void main(String[] args) throws ParseException, IOException {
         CommandLine commandLine = getArgs(args);
 
+        if (!commandLine.hasOption(OPTION_F)) {
+            throw new RuntimeException("-f is a required argument");
+        }
+        if (!commandLine.hasOption(OPTION_O)) {
+            throw new RuntimeException("-o is a required argument");
+        }
+
         String inputFileName = commandLine.getOptionValue(OPTION_F);
         Path inputFile = Paths.get(inputFileName);
         if (!Files.isReadable(inputFile)) {
@@ -33,8 +41,10 @@ public class Main {
         }
         String outputFileName = commandLine.getOptionValue(OPTION_O);
         Path outputFile = Paths.get(outputFileName);
+        Charset u = StandardCharsets.UTF_8;
+        Files.write(outputFile, new ArrayList<>(), u);
         if (!Files.isWritable(outputFile)) {
-            throw new RuntimeException("Can not write to file: " + outputFileName);
+            throw new RuntimeException("Can not write to file: " + outputFile.toFile().getAbsolutePath());
         }
 
         Injector injector = Guice.createInjector(new CleanerModule());
@@ -43,7 +53,6 @@ public class Main {
 
         List<String> lines = listCleaner.cleanFile(inputFile);
 
-        Charset u = StandardCharsets.UTF_8;
         Files.write(outputFile, lines, u);
     }
 

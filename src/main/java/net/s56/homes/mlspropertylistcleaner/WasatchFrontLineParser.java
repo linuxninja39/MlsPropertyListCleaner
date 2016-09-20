@@ -1,6 +1,7 @@
 package net.s56.homes.mlspropertylistcleaner;
 
 import com.google.inject.Inject;
+import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class WasatchFrontLineParser implements LineParser {
         config = configFactory.getConfig(this.getClass());
     }
 
+    @Override
     public List<String> parseHeader(String headerString) {
         headerParsed = true;
         positionMap = new HashMap<>();
@@ -37,6 +39,13 @@ public class WasatchFrontLineParser implements LineParser {
         return config.getOrderedOutputFields();
     }
 
+    @Override
+    public List<String> getHeaders() {
+        headerParsed = true;
+        return config.getOrderedOutputFields();
+    }
+
+    @Override
     public List<String> parseLine(String lineString) {
         if (!headerParsed) {
             throw new RuntimeException("Headed must be parsed first");
@@ -57,5 +66,18 @@ public class WasatchFrontLineParser implements LineParser {
 
     public boolean isHeaderParsed() {
         return headerParsed;
+    }
+
+    @Override
+    public List<String> parseLine(CSVRecord record) {
+        List<String> orderedElements = new ArrayList<>();
+        for (String element : config.getOrderedOutputFields()) {
+            if (!record.isSet(element)) {
+                throw new RuntimeException("header '" + element + "' not found in headers");
+            }
+
+            orderedElements.add(record.get(element));
+        }
+        return orderedElements;
     }
 }

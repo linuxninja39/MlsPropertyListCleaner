@@ -21,3 +21,14 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
     compile group: 'org.apache.commons', name: 'commons-csv', version: '1.4'
 }
+
+jar {
+    from {
+        (configurations.runtime).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes("Main-Class": "net.s56.homes.mlspropertylistcleaner.Main" )
+    }
+}

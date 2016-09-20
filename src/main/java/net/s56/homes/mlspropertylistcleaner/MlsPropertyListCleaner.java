@@ -1,8 +1,12 @@
 package net.s56.homes.mlspropertylistcleaner;
 
 import com.google.inject.Inject;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,17 +25,19 @@ public class MlsPropertyListCleaner {
     }
 
     public List<String> cleanFile(Path path) throws IOException {
-        List<String> lines = new ArrayList<String>();
-        Stream<String> stream = Files.lines(path);
-        stream.forEach(
-                l -> {
-                    if (lineParser.isHeaderParsed()) {
-                        lines.add(String.join(",", lineParser.parseLine(l)));
-                    } else {
-                        lines.add(String.join(",", lineParser.parseHeader(l)));
-                    }
-                }
-        );
+        List<String> lines = new ArrayList<>();
+        Reader fileReader = new FileReader(path.toFile());
+        Iterable<CSVRecord> records = CSVFormat.EXCEL.withFirstRecordAsHeader().parse(fileReader);
+
+        for (CSVRecord record : records) {
+            List<String> line;
+            if(lineParser.isHeaderParsed()) {
+                line = lineParser.parseLine(record);
+            } else {
+                line = lineParser.getHeaders();
+            }
+            lines.add(String.join(",", line));
+        }
 
         return lines;
     }
