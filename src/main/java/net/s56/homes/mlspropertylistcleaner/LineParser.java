@@ -1,5 +1,6 @@
 package net.s56.homes.mlspropertylistcleaner;
 
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public interface LineParser {
     boolean isHeaderParsed();
     List<String> parseLine(CSVRecord record);
     List<String> getHeaders();
+    CSVFormat getFomat();
 }

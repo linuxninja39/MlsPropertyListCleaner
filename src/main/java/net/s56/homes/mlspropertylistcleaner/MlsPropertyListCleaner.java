@@ -27,7 +27,24 @@ public class MlsPropertyListCleaner {
     public List<String> cleanFile(Path path) throws IOException {
         List<String> lines = new ArrayList<>();
         Reader fileReader = new FileReader(path.toFile());
-        Iterable<CSVRecord> records = CSVFormat.EXCEL.withFirstRecordAsHeader().parse(fileReader);
+        Stream<String> stream = Files.lines(path);
+        stream.forEach(
+                l -> {
+                    if (lineParser.isHeaderParsed()) {
+                        lines.add(String.join(",", lineParser.parseLine(l)));
+                    } else {
+                        lines.add(String.join(",", lineParser.parseHeader(l)));
+                    }
+                }
+        );
+
+        return lines;
+    }
+
+    public List<String> cleanFileWithCommons(Path path) throws IOException {
+        List<String> lines = new ArrayList<>();
+        Reader fileReader = new FileReader(path.toFile());
+        Iterable<CSVRecord> records = lineParser.getFomat().withFirstRecordAsHeader().parse(fileReader);
 
         for (CSVRecord record : records) {
             List<String> line;

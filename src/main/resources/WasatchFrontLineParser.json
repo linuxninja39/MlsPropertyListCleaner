@@ -14,10 +14,12 @@
     "TotBth",
     "LstPrice",
     "SoldPrice",
+    "YearBlt",
     "DaysOnMkt",
     "SoldTerms",
     "Style",
-    "YearBlt"
+    "ListNo",
+    "Status"
   ],
   "allFields" : [
     "ListNo",

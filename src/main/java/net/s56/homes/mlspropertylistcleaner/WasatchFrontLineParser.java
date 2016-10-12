@@ -1,6 +1,7 @@
 package net.s56.homes.mlspropertylistcleaner;
 
 import com.google.inject.Inject;
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.Map;
  * Created by jaboswell on 9/18/16.
  */
 public class WasatchFrontLineParser implements LineParser {
+    public final CSVFormat format = CSVFormat.INFORMIX_UNLOAD_CSV;
     private LineParserConfigFactory configFactory;
     private LineParserConfig config;
     private boolean headerParsed;
@@ -32,6 +34,7 @@ public class WasatchFrontLineParser implements LineParser {
 
         Integer counter = 0;
         for (String element : headerString.split(",")) {
+            element = element.replace("\"", "");
             positionMap.put(element, counter);
             counter++;
         }
@@ -46,11 +49,16 @@ public class WasatchFrontLineParser implements LineParser {
     }
 
     @Override
+    public CSVFormat getFomat() {
+        return format;
+    }
+
+    @Override
     public List<String> parseLine(String lineString) {
         if (!headerParsed) {
             throw new RuntimeException("Headed must be parsed first");
         }
-        List<String> elements = Arrays.asList(lineString.split(","));
+        List<String> elements = Arrays.asList(lineString.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1));
         List<String> orderedElements = new ArrayList<>();
 
         for (String element : config.getOrderedOutputFields()) {
